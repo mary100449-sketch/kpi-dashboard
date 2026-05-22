@@ -610,15 +610,18 @@ export default function App() {
   const [tab,     setTab]     = useState("overview");
   const [fGoal,   setFGoal]   = useState("전체");
   const [modal,   setModal]   = useState(null);
+  const [msg,     setMsg]     = useState("");
 
 
-  const GS_URL = import.meta.env.VITE_GS_URL || "";
+  const GS_URL = "https://script.google.com/macros/s/AKfycbxNdCkyobK9o5akbQaG1AQC3DvSh8IV1i_tk9Nr3BCUsNG8jcyquKkfev8vJdABebXk/exec";
 
   const gsGet = async () => {
     const res = await fetch(GS_URL);
     const json = await res.json();
     return json.data;
   };
+
+  
   const gsPost = async (body) => {
     try {
       await fetch(GS_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
@@ -706,8 +709,39 @@ export default function App() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:8,background:"#0d1628",border:"1px solid #1e2d45",borderRadius:8,padding:"5px 10px"}}>
           <div style={{width:7,height:7,borderRadius:"50%",background:"#22c55e"}}/>
-          <span style={{color:"#86efac",fontSize:11,fontWeight:600}}>자동 저장됨</span>
+          <span style={{color:"#86efac",fontSize:11,fontWeight:600}}>Google Sheets 연동됨</span>
         </div>
+        {[
+          {label:"📤 초기 데이터 업로드", action: async () => {
+            setMsg("업로드 중...");
+            try {
+              await gsPost({action:"init", sheet:"self_kpi", data:defaultKPIs,   user:"야탑"});
+              await gsPost({action:"init", sheet:"hq_kpi",   data:defaultHQKPIs, user:"야탑"});
+              await gsPost({action:"init", sheet:"tasks",    data:defaultTasks,   user:"야탑"});
+              const data = await gsGet();
+              setKpis(data.selfKpis); setHqKpis(data.hqKpis); setTasks(data.tasks);
+              setMsg("✅ 업로드 완료!");
+            } catch(e) { setMsg("❌ 실패"); }
+            setTimeout(()=>setMsg(""),4000);
+          }},
+          {label:"🔄 새로고침", action: async () => {
+            setMsg("불러오는 중...");
+            try {
+              const data = await gsGet();
+              setKpis(data.selfKpis?.length ? data.selfKpis : defaultKPIs);
+              setHqKpis(data.hqKpis?.length ? data.hqKpis : defaultHQKPIs);
+              setTasks(data.tasks?.length ? data.tasks : defaultTasks);
+              setMsg("✅ 완료!");
+            } catch { setMsg("❌ 실패"); }
+            setTimeout(()=>setMsg(""),3000);
+          }}
+        ].map(btn => (
+          <button key={btn.label} onClick={btn.action}
+            style={{background:"#1a2540",border:"1px solid #1e2d45",borderRadius:7,color:"#94a3b8",padding:"6px 12px",cursor:"pointer",fontSize:11,fontWeight:600}}>
+            {btn.label}
+          </button>
+        ))}
+        {msg && <span style={{color:msg.startsWith("✅")?"#22c55e":msg.startsWith("❌")?"#ef4444":"#f59e0b",fontSize:12,fontWeight:600}}>{msg}</span>}
         <div style={{marginLeft:"auto",display:"flex",gap:4,background:"#0f1623",borderRadius:10,padding:4}}>
           {TABS.map(([t,l]) => (
             <button key={t} onClick={() => setTab(t)}
