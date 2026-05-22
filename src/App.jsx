@@ -613,32 +613,34 @@ export default function App() {
   const [msg,     setMsg]     = useState("");
 
 
-  const GS_URL = "https://script.google.com/macros/s/AKfycbxNdCkyobK9o5akbQaG1AQC3DvSh8IV1i_tk9Nr3BCUsNG8jcyquKkfev8vJdABebXk/exec";
+  const SB_URL = "https://myrvmsrofyqjzqewkxpl.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cnZtc3JvZnlxanpxZXdreHBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzg4MjMsImV4cCI6MjA5NDk1NDgyM30.yPQIDvmg-KHrpM3e5dCUAknbVvUkShr4kLdl-n6pHGE";
+  const SBH = { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json", "Prefer": "resolution=merge-duplicates" };
 
-  const gsGet = async () => {
-    const res = await fetch(GS_URL);
-    const json = await res.json();
-    return json.data;
+  const sbLoad = async (table) => {
+    const res = await fetch(SB_URL + "/rest/v1/" + table + "?select=*", { headers: SBH });
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows.map(r => r.data) : [];
   };
 
-  
-  const gsPost = async (body) => {
+  const sbSave = async (table, id, data) => {
     try {
-      await fetch(GS_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
+      await fetch(SB_URL + "/rest/v1/" + table, {
+        method: "POST", headers: SBH,
+        body: JSON.stringify({ id: String(id), data })
+      });
     } catch(e) { console.error("저장 실패", e); }
   };
 
   useEffect(() => {
     (async () => {
       try {
-        if (GS_URL) {
-          const data = await gsGet();
-          setKpis(data.selfKpis?.length  ? data.selfKpis  : defaultKPIs);
-          setTasks(data.tasks?.length    ? data.tasks      : defaultTasks);
-          setHqKpis(data.hqKpis?.length  ? data.hqKpis    : defaultHQKPIs);
-        } else {
-          setKpis(defaultKPIs); setTasks(defaultTasks); setHqKpis(defaultHQKPIs);
-        }
+        const [selfKpis, hqKpis, tasks] = await Promise.all([
+          sbLoad("self_kpi"), sbLoad("hq_kpi"), sbLoad("tasks")
+        ]);
+        setKpis(selfKpis?.length  ? selfKpis  : defaultKPIs);
+        setHqKpis(hqKpis?.length  ? hqKpis    : defaultHQKPIs);
+        setTasks(tasks?.length    ? tasks      : defaultTasks);
       } catch {
         setKpis(defaultKPIs); setTasks(defaultTasks); setHqKpis(defaultHQKPIs);
       }
@@ -653,29 +655,29 @@ export default function App() {
         scheduledAt: val !== null ? null : k.scheduledAt,
         history: val !== null ? [...(k.history||[]), Math.round(getP({...k,current:val}))].slice(-8) : k.history
       });
-      if (GS_URL) gsPost({action:"upsert", sheet:"self_kpi", id, data:next.find(k=>k.id===id), user:"야탑"});
+      sbSave("self_kpi", id, next.find(k=>k.id===id));
       return next;
     });
     setModal(null);
   };
   const schedKPI = (id, date) => setKpis(ks => {
     const n = ks.map(k => k.id !== id ? k : {...k, scheduledAt:date});
-    if (GS_URL) gsPost({action:"upsert", sheet:"self_kpi", id, data:n.find(k=>k.id===id), user:"야탑"});
+    sbSave("self_kpi", id, n.find(k=>k.id===id));
     return n;
   });
   const editKPI = (form) => {
-    setKpis(ks => { const n=ks.map(k=>k.id!==form.id?k:{...k,...form}); if(GS_URL) gsPost({action:"upsert",sheet:"self_kpi",id:form.id,data:form,user:"야탑"}); return n; });
+    setKpis(ks => { const n=ks.map(k=>k.id!==form.id?k:{...k,...form}); sbSave("self_kpi", form.id, form); return n; });
     setModal(null);
   };
-  const delKPI    = (id)       => setKpis(ks => ks.filter(k => k.id !== id));
+  const delKPI    = (id) => setKpis(ks => ks.filter(k => k.id !== id));
   const updateHQ  = (id, logs) => setHqKpis(ks => {
     const n = ks.map(k => k.id !== id ? k : {...k, monthlyLogs:logs});
-    if (GS_URL) gsPost({action:"upsert", sheet:"hq_kpi", id, data:n.find(k=>k.id===id), user:"야탑"});
+    sbSave("hq_kpi", id, n.find(k=>k.id===id));
     return n;
   });
   const updateTask = (id, patch) => setTasks(ts => {
     const n = ts.map(t => t.id !== id ? t : {...t, ...patch});
-    if (GS_URL) gsPost({action:"upsert", sheet:"tasks", id, data:n.find(t=>t.id===id), user:"야탑"});
+    sbSave("tasks", id, n.find(t=>t.id===id));
     return n;
   });
 
@@ -715,22 +717,20 @@ export default function App() {
           {label:"📤 초기 데이터 업로드", action: async () => {
             setMsg("업로드 중...");
             try {
-              await gsPost({action:"init", sheet:"self_kpi", data:defaultKPIs,   user:"야탑"});
-              await gsPost({action:"init", sheet:"hq_kpi",   data:defaultHQKPIs, user:"야탑"});
-              await gsPost({action:"init", sheet:"tasks",    data:defaultTasks,   user:"야탑"});
-              const data = await gsGet();
-              setKpis(data.selfKpis); setHqKpis(data.hqKpis); setTasks(data.tasks);
+              for (const row of defaultKPIs)   await sbSave("self_kpi", row.id, row);
+              for (const row of defaultHQKPIs) await sbSave("hq_kpi",   row.id, row);
+              for (const row of defaultTasks)  await sbSave("tasks",    row.id, row);
+              const [sk,hk,tk] = await Promise.all([sbLoad("self_kpi"),sbLoad("hq_kpi"),sbLoad("tasks")]);
+              if(sk?.length) setKpis(sk); if(hk?.length) setHqKpis(hk); if(tk?.length) setTasks(tk);
               setMsg("✅ 업로드 완료!");
-            } catch(e) { setMsg("❌ 실패"); }
+            } catch(e) { setMsg("❌ 실패: "+e.message); }
             setTimeout(()=>setMsg(""),4000);
           }},
           {label:"🔄 새로고침", action: async () => {
             setMsg("불러오는 중...");
             try {
-              const data = await gsGet();
-              setKpis(data.selfKpis?.length ? data.selfKpis : defaultKPIs);
-              setHqKpis(data.hqKpis?.length ? data.hqKpis : defaultHQKPIs);
-              setTasks(data.tasks?.length ? data.tasks : defaultTasks);
+              const [sk,hk,tk] = await Promise.all([sbLoad("self_kpi"),sbLoad("hq_kpi"),sbLoad("tasks")]);
+              if(sk?.length) setKpis(sk); if(hk?.length) setHqKpis(hk); if(tk?.length) setTasks(tk);
               setMsg("✅ 완료!");
             } catch { setMsg("❌ 실패"); }
             setTimeout(()=>setMsg(""),3000);
