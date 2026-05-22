@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>야탑 유스센터 성과지표 대시보드</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#070d18;color:#f1f5f9;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;min-height:100vh}
+button,input,select,textarea{font-family:inherit;cursor:pointer}
+
+/* 헤더 */
+.hd{background:#0a1020;border-bottom:1px solid #1e2d45;padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.hd h1{font-size:15px;font-weight:800}
+.hd p{font-size:11px;color:#94a3b8}
+.badge{display:flex;align-items:center;gap:5px;background:#0d1628;border:1px solid #1e2d45;border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600}
+.dot{width:6px;height:6px;border-radius:50%}
+.hd-r{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.btn{background:#1a2540;border:1px solid #1e2d45;border-radius:7px;color:#94a3b8;padding:5px 11px;font-size:11px;font-weight:600}
+.btn:hover{border-color:#6366f1;color:#a5b4fc}
+.btn-o{border-color:#f97316;color:#fb923c}
+.btn-g{border-color:#22c55e;color:#4ade80}
+.tabs{display:flex;gap:3px;background:#0f1623;border-radius:9px;padding:3px}
+.tab{padding:5px 11px;border-radius:6px;border:none;background:none;color:#94a3b8;font-size:11px;font-weight:600}
+.tab.on{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.tab.on-o{background:linear-gradient(135deg,#f97316,#ef4444);color:#fff}
+.tab.on-g{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff}
+.tab.on-p{background:linear-gradient(135deg,#ec4899,#db2777);color:#fff}
+.toast{font-size:11px;font-weight:600;padding:4px 9px;border-radius:5px}
+
+/* 이름바 */
+.namebar{background:#0d1220;border-bottom:1px solid #1e2d45;padding:8px 20px;display:flex;align-items:center;gap:10px}
+.namebar label{color:#94a3b8;font-size:11px;white-space:nowrap}
+.nameinp{background:#1a2540;border:1px solid #1e2d45;border-radius:6px;padding:5px 10px;color:#f1f5f9;font-size:12px;outline:none;width:160px}
+
+/* 본문 */
+.wrap{max-width:1200px;margin:0 auto;padding:18px 16px}
+
+/* 요약 */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:11px;margin-bottom:18px}
+.sc{background:#0f1623;border:1px solid #1e2d45;border-radius:12px;padding:15px 17px}
+.sl{color:#94a3b8;font-size:10px;margin-bottom:4px;font-weight:600}
+.sv{font-size:24px;font-weight:800;letter-spacing:-1px}
+
+/* 프로그레스 */
+.pb{background:#1a2540;border-radius:99px;height:6px;overflow:hidden}
+.pf{height:100%;border-radius:99px;transition:width .5s}
+
+/* 차트 */
+.chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:8px}
+.cc{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.cb{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .5s}
+.cl{color:#94a3b8;font-size:9px;text-align:center;line-height:1.3;word-break:keep-all}
+.cp{color:#64748b;font-size:9px}
+
+/* 목표 헤더 */
+.gh{display:flex;align-items:center;gap:9px;margin-bottom:14px;padding-bottom:9px}
+.gb{width:4px;height:18px;border-radius:99px}
+.gn{color:#f1f5f9;font-size:13px;font-weight:800}
+.wb{background:#1e3a5f;color:#94a3b8;font-size:11px;padding:2px 7px;border-radius:5px;font-weight:600}
+
+/* 그룹 박스 */
+.grp{background:#0a111e;border:1px solid #1e2d45;border-radius:12px;overflow:hidden;margin-bottom:15px}
+.grhd{padding:10px 16px;background:#0d1628;border-bottom:1px solid #1e2d45;display:flex;align-items:center;justify-content:space-between}
+.grl{display:flex;align-items:center;gap:8px}
+.grline{width:3px;height:13px;border-radius:99px}
+.grname{color:#cbd5e1;font-size:12px;font-weight:700}
+.grwb{background:#1e3a5f;color:#94a3b8;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.grr{display:flex;align-items:center;gap:9px;color:#cbd5e1;font-size:10px}
+.grcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:12px}
+
+/* KPI 카드 */
+.kc{background:#0f1623;border:1px solid #1e2d45;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:9px;transition:all .15s}
+.kc:hover{transform:translateY(-2px)}
+.kname{color:#cbd5e1;font-size:12px;font-weight:600;margin-bottom:3px}
+.kcrit{color:#94a3b8;font-size:10px}
+.kv{color:#f1f5f9;font-size:18px;font-weight:800}
+.ku{color:#8b9ab0;font-size:10px;margin-left:2px}
+.kt{color:#94a3b8;font-size:11px}
+.ke{color:#64748b;font-size:13px;font-weight:700}
+.ks{font-size:10px;font-weight:600}
+.kp{color:#94a3b8;font-size:10px}
+.kprev{color:#64748b;font-size:10px;border-top:1px solid #1e2d45;padding-top:6px}
+.kprev span{color:#94a3b8}
+.recprev{border-top:1px solid #1e2d45;padding-top:7px}
+.rpti{color:#6366f1;font-size:10px;font-weight:700;margin-bottom:3px}
+.rrow{display:flex;gap:5px;margin-bottom:2px}
+.ridx{color:#6366f1;font-size:9px;font-weight:700;min-width:14px}
+.rtitle{color:#94a3b8;font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rdate{color:#64748b;font-size:9px}
+.sched-btn{background:none;border:1px dashed #1e2d45;border-radius:5px;color:#64748b;padding:4px 9px;font-size:10px;width:100%;text-align:left}
+.sched-row{display:flex;gap:4px}
+.si{flex:1;background:#1a2540;border:1px solid #1e2d45;border-radius:5px;padding:4px 7px;color:#f1f5f9;font-size:10px;outline:none}
+.sok{background:#6366f1;border:none;border-radius:5px;color:#fff;padding:4px 8px;font-size:10px;font-weight:600}
+.sx{background:#1a2540;border:1px solid #1e2d45;border-radius:5px;color:#94a3b8;padding:4px 6px;font-size:10px}
+
+/* 필터 */
+.filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.fb{padding:5px 11px;border-radius:18px;border:1px solid #1e2d45;background:#0f1623;color:#64748b;font-size:11px;font-weight:600}
+.fb.on{border:none;color:#fff}
+
+/* 모달 */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:50}
+.mbg.show{display:flex}
+.mbox{background:#0f1623;border:1px solid #1e2d45;border-radius:15px;width:min(94vw,490px);max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+.mx{position:absolute;top:12px;right:12px;background:none;border:none;color:#6b7280;font-size:18px}
+.mt{color:#f1f5f9;font-size:16px;font-weight:700;margin-bottom:3px}
+.ms{color:#94a3b8;font-size:12px;margin-bottom:16px}
+.ml{color:#94a3b8;font-size:11px;display:block;margin-bottom:4px}
+.mi{width:100%;background:#1a2540;border:1px solid #1e2d45;border-radius:7px;padding:9px 11px;color:#f1f5f9;font-size:13px;outline:none;box-sizing:border-box;margin-bottom:10px}
+.mf{display:flex;gap:9px;margin-top:14px;border-top:1px solid #1e2d45;padding-top:13px}
+.mcancel{flex:1;padding:10px;background:#1a2540;border:1px solid #1e2d45;border-radius:7px;color:#94a3b8}
+.mok{flex:1;padding:10px;border:none;border-radius:7px;color:#fff;font-weight:600}
+.mg{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.mp{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+.mo{background:linear-gradient(135deg,#f97316,#ef4444)}
+.arform{background:#1a2540;border-radius:9px;padding:11px;margin-bottom:9px}
+.arrow{display:flex;gap:7px;margin-bottom:7px}
+.ari{flex:1;background:#0f1623;border:1px solid #1e2d45;border-radius:5px;padding:6px 7px;color:#f1f5f9;font-size:11px;outline:none}
+.ard{width:120px;background:#0f1623;border:1px solid #1e2d45;border-radius:5px;padding:6px 7px;color:#f1f5f9;font-size:11px;outline:none;flex-shrink:0}
+.arbtns{display:flex;gap:5px;justify-content:flex-end}
+.arok{background:#22c55e;border:none;border-radius:5px;color:#fff;padding:5px 12px;font-size:11px;font-weight:600}
+.arx{background:#0f1623;border:1px solid #1e2d45;border-radius:5px;color:#94a3b8;padding:5px 10px;font-size:11px}
+.ritem{background:#1a2540;border-radius:7px;padding:7px 11px;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.ach{font-size:11px;margin:0 0 10px;font-weight:600}
+
+/* 비계량 */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.tc{background:#0f1623;border:1px solid #1e2d45;border-radius:13px;padding:16px;display:flex;flex-direction:column;gap:9px;transition:box-shadow .15s}
+.tc:hover{box-shadow:0 6px 22px rgba(99,102,241,.12)}
+.tname{color:#94a3b8;font-size:12px;font-weight:700;flex:1;line-height:1.4}
+.tst{font-size:10px;font-weight:700;white-space:nowrap}
+.iwrap{border-radius:9px;overflow:hidden;margin-bottom:6px}
+.irow{display:flex;align-items:center;gap:7px;padding:7px 11px}
+.ichk{width:18px;height:18px;border-radius:4px;border:2px solid #334155;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ichk.done{background:#22c55e;border-color:#22c55e}
+.icnt{flex-shrink:0;min-width:32px;text-align:center;font-weight:800;font-size:12px}
+.ilabel{flex:1;font-size:11px;line-height:1.4}
+.iadd{background:#6366f122;border:1px solid #6366f144;border-radius:4px;color:#818cf8;padding:2px 7px;font-size:10px;font-weight:600}
+.itog{background:none;border:none;color:#64748b;font-size:10px;padding:2px 3px}
+.irecs{border-top:1px solid #1e2d45;padding:6px 11px}
+.isch{padding:0 11px 7px}
+.ischbtn{background:none;border:none;color:#374151;font-size:10px;padding-top:3px;text-align:left}
+.tnote{background:none;border:1px dashed #1e2d45;border-radius:5px;color:#64748b;padding:6px 11px;font-size:10px;text-align:left;width:100%}
+
+/* 중점계량 */
+.hqbanner{background:linear-gradient(135deg,#f9731611,#ef444411);border:1px solid #f9731633;border-radius:11px;padding:12px 17px;margin-bottom:20px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.hqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.hqc{background:#0f1623;border:1px solid #1e2d45;border-radius:13px;padding:16px;display:flex;flex-direction:column;gap:9px;transition:all .15s}
+.hqc:hover{transform:translateY(-2px)}
+.hqtag{font-size:9px;padding:2px 6px;border-radius:9px;font-weight:700}
+.hqname{color:#cbd5e1;font-size:12px;font-weight:700;line-height:1.4}
+.hqbtn{border:none;border-radius:6px;color:#fff;padding:4px 9px;font-size:10px;font-weight:600;background:linear-gradient(135deg,#f97316,#ef4444)}
+.hqinfo p{color:#64748b;font-size:10px;margin:0 0 2px}
+.hqlogtog{background:none;border:none;color:#94a3b8;font-size:10px;padding:0;font-weight:600}
+.hqlogitem{display:flex;align-items:center;gap:7px;background:#0d1628;border-radius:6px;padding:6px 9px;margin-top:3px}
+.hqlogm{font-size:10px;font-weight:700;min-width:26px}
+.hqlogv{color:#f1f5f9;font-size:11px;font-weight:600}
+.hqlogn{color:#64748b;font-size:10px;flex:1}
+.hqlogd{color:#475569;font-size:9px}
+.hqlogdel{background:none;border:none;color:#64748b;font-size:11px}
+
+/* 팀원 입력 현황 */
+.logsec{margin-top:36px;background:#0f1623;border:1px solid #1e2d45;border-radius:14px;padding:22px}
+.loghd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.logtt{color:#f1f5f9;font-size:15px;font-weight:800}
+.logsub{color:#64748b;font-size:11px;margin-top:2px}
+.logtable{width:100%;border-collapse:collapse;font-size:11px;min-width:600px}
+.logtable th{background:#0d1628;color:#94a3b8;padding:9px 13px;text-align:left;border-bottom:1px solid #1e2d45;white-space:nowrap;font-weight:600}
+.logtable td{padding:9px 13px;border-bottom:1px solid #0d1628;color:#cbd5e1;vertical-align:middle}
+.logtable tr:hover td{background:#0d1628}
+.logempty{text-align:center;color:#374151;padding:26px;font-size:12px}
+.tbadge{font-size:9px;padding:2px 7px;border-radius:99px;font-weight:700}
+.tbk{background:#6366f122;color:#818cf8}
+.tbh{background:#f9731622;color:#fb923c}
+.tbt{background:#14b8a622;color:#2dd4bf}
+.logwrap{overflow-x:auto}
+
+/* 카드 공통 */
+.card{background:#0f1623;border:1px solid #1e2d45;border-radius:13px;padding:20px;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="hd">
+  <div class="logo">🎯</div>
+  <div><h1>성과지표 관리 대시보드</h1><p>야탑 유스센터 · 2026년 성과지표</p></div>
+  <div class="badge"><span class="dot" id="sdot" style="background:#64748b"></span><span id="stext" style="color:#64748b;font-size:11px;font-weight:600">Sheets 미연결</span></div>
+  <div class="hd-r">
+    <button class="btn btn-g" onclick="loadLog()" title="Sheets에서 팀원 입력 내역 불러오기">🔄 팀원 현황</button>
+    <span id="toast" class="toast" style="display:none"></span>
+    <div class="tabs">
+      <button class="tab on" id="tab-overview" onclick="switchTab('overview')">전체 현황</button>
+      <button class="tab" id="tab-quant" onclick="switchTab('quant')">자체계량지표</button>
+      <button class="tab" id="tab-hq" onclick="switchTab('hq')">중점계량지표</button>
+      <button class="tab" id="tab-qual" onclick="switchTab('qual')">비계량지표</button>
+    </div>
+  </div>
+</div>
+
+<!-- 이름 입력 -->
+<div class="namebar">
+  <label>👤 입력자:</label>
+  <input class="nameinp" id="uname" placeholder="이름 입력" oninput="localStorage.setItem('uname',this.value)">
+  <span style="color:#475569;font-size:10px">· 입력한 이름이 Sheets 기록에 남아요</span>
+</div>
+
+<!-- 탭 내용 -->
+<div class="wrap">
+  <div id="pOverview"></div>
+  <div id="pQuant" style="display:none"></div>
+  <div id="pHq" style="display:none"></div>
+  <div id="pQual" style="display:none"></div>
+
+  <!-- 팀원 입력 현황 -->
+  <div class="logsec" id="logSec" style="display:none">
+    <div class="loghd">
+      <div><div class="logtt">📋 팀원 입력 현황</div><div class="logsub">Google Sheets에 저장된 실적 기록 (최신 100건)</div></div>
+      <button class="btn btn-g" onclick="loadLog()">🔄 새로고침</button>
+    </div>
+    <div class="logwrap">
+      <table class="logtable">
+        <thead><tr><th>저장 시각</th><th>입력자</th><th>구분</th><th>지표명</th><th>입력값</th><th>메모</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="6" class="logempty">🔄 "팀원 현황" 버튼을 눌러 불러오세요</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 실적 입력 모달 -->
+<div class="mbg" id="mUpdate">
+  <div class="mbox">
+    <button class="mx" onclick="closeM('mUpdate')">✕</button>
+    <div class="mt">실적 입력</div>
+    <div class="ms" id="mUpdateSub"></div>
+    <label class="ml" id="mUpdateLbl"></label>
+    <input class="mi" type="number" step="any" id="mUpdateVal" oninput="calcAch()">
+    <div class="ach" id="achDiv" style="display:none"></div>
+    <div style="border-top:1px solid #1e2d45;padding-top:13px;margin-top:2px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+        <span style="color:#94a3b8;font-size:11px;font-weight:700">세부 실적 <span id="reccnt" style="color:#64748b;font-weight:400"></span></span>
+        <button class="btn" style="font-size:10px;padding:3px 9px" onclick="showAR()">+ 추가</button>
+      </div>
+      <div id="arForm" style="display:none" class="arform">
+        <div class="arrow"><input class="ard" type="date" id="arDate"><input class="ari" placeholder="실적명 (필수)" id="arTitle"></div>
+        <div class="arbtns"><button class="arx" onclick="hideAR()">취소</button><button class="arok" onclick="addR()">추가</button></div>
+      </div>
+      <div id="recList" style="max-height:170px;overflow-y:auto"></div>
+    </div>
+    <div class="mf">
+      <button class="mcancel" onclick="closeM('mUpdate')">취소</button>
+      <button class="mok mg" onclick="saveUpdate()">💾 저장 & Sheets 전송</button>
+    </div>
+  </div>
+</div>
+
+<!-- 중점계량 모달 -->
+<div class="mbg" id="mHq">
+  <div class="mbox">
+    <button class="mx" onclick="closeM('mHq')">✕</button>
+    <span class="hqtag" id="mHqTag" style="margin-bottom:9px;display:inline-block"></span>
+    <div class="hqname" id="mHqName" style="margin:8px 0 16px;font-size:14px;font-weight:700;color:#f1f5f9"></div>
+    <div style="display:flex;gap:9px;margin-bottom:10px">
+      <div style="flex:1"><label class="ml">기준 월</label>
+        <select class="mi" id="mHqMonth" style="margin-bottom:0">
+          <option>1월</option><option>2월</option><option>3월</option><option>4월</option>
+          <option>5월</option><option>6월</option><option>7월</option><option>8월</option>
+          <option>9월</option><option>10월</option><option>11월</option><option>12월</option>
+        </select></div>
+      <div style="flex:1"><label class="ml">작성 기준일</label><input class="mi" type="date" id="mHqDate" style="margin-bottom:0"></div>
+    </div>
+    <label class="ml" id="mHqLbl"></label>
+    <input class="mi" type="number" step="any" id="mHqVal" oninput="calcHqAch()">
+    <div class="ach" id="hqachDiv" style="display:none"></div>
+    <label class="ml">메모 (선택)</label>
+    <input class="mi" id="mHqNote" placeholder="특이사항, 사유 등">
+    <div class="mf">
+      <button class="mcancel" onclick="closeM('mHq')">취소</button>
+      <button class="mok mo" onclick="saveHq()">💾 저장 & Sheets 전송</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GS_URL = "https://script.google.com/macros/s/AKfycbw3Enhd5HoZTJswJY8hlATFnJvdtfArQzZKHbAbzbYlaUhOrPIj1Cmm1Yjs-jmiwTRcrg/exec";
+
+// ─── 데이터 ───
+const GOALS=[{id:"G1",name:"지속가능한 청소년활동 성장동력 개발",weight:5.5,color:"#6366f1"},{id:"G2",name:"실질적 임팩트가 있는 청년사업 브랜드화",weight:4.0,color:"#ec4899"},{id:"G3",name:"가치와 기술이 융합된 교육 플랫폼 선도",weight:4.5,color:"#14b8a6"},{id:"G4",name:"미래선도형 가치경영 체계 확립",weight:6.0,color:"#f97316"}];
+const KPIG=[{id:"KG11",goalId:"G1",weight:2.0,name:"청소년 참여 사업 효과성 및 성과진단 이행률"},{id:"KG12",goalId:"G1",weight:2.0,name:"지역연계 기반 청소년 활동 확산 성과율"},{id:"KG13",goalId:"G1",weight:1.5,name:"청소년 중독 위험성 인식율"},{id:"KG21",goalId:"G2",weight:2.0,name:"청년 사업 확장 및 참여 성과 지수"},{id:"KG22",goalId:"G2",weight:2.0,name:"청년 사업 운영 통합 효과성"},{id:"KG31",goalId:"G3",weight:1.5,name:"창의융합 교육 성과"},{id:"KG32",goalId:"G3",weight:2.0,name:"교육 사각지대 청소년 미래교육 보급 성과"},{id:"KG33",goalId:"G3",weight:1.0,name:"생애주기별 맞춤형 강좌 이용 활성화율"},{id:"KG41",goalId:"G4",weight:1.5,name:"자원 최적화 예산절감액"},{id:"KG42",goalId:"G4",weight:1.5,name:"VOC기반 시설개선 이행률"},{id:"KG43",goalId:"G4",weight:1.0,name:"업무 표준화 달성률"},{id:"KG44",goalId:"G4",weight:2.0,name:"직무전문성 기반 지식자산 확산도"}];
+const HQCATS=[{id:"HC1",name:"역량·미래교육",color:"#6366f1"},{id:"HC2",name:"청년·시민 참여",color:"#ec4899"},{id:"HC3",name:"재정 운영",color:"#f97316"},{id:"HC4",name:"홍보",color:"#14b8a6"}];
+const mk=(id,g,n,u,p,t,c)=>({id,groupId:g,name:n,unit:u,prev:p,target:t,current:null,criterion:c,scheduledAt:null,records:[],history:[]});
+const mh=(id,c,n,u,p,t,w,b,cr,f,tn)=>({id,catId:c,name:n,unit:u,prev25:p,target:t,weight:w,bsc:b,criterion:cr,formula:f,targetNote:tn||null,monthlyLogs:[]});
+const mti=(id,l,t)=>({id,label:l,target:t});
+const DK=[mk(101,"KG11","청소년 역량변화율","%",8.66,9.53,"전년대비 110%"),mk(102,"KG11","성장데이터 확보율","%",40.63,56.88,"전년대비 140%"),mk(103,"KG12","협력사업 수","개",5,7,"전년대비 110%"),mk(104,"KG12","참여자 수","명",8804,9684,"전년대비 140%"),mk(105,"KG13","청소년 중독 위험성 인식율","%",null,90,"보건복지부 81.2% 대비 110%"),mk(201,"KG21","청년사업 수","개",7,10,"전년대비 140%"),mk(202,"KG21","참여자 수","명",46935,51629,"전년대비 110%"),mk(203,"KG22","청년사업 참여 완료율","%",94.6,95.6,"전년대비 101%"),mk(204,"KG22","참여자 만족도 효과율","%",95,96,""),mk(301,"KG31","만족도","%",90.13,93,"전년대비 103%"),mk(302,"KG31","확산도","명",6250,6436,"직전 3개년 평균 110%"),mk(303,"KG32","콘텐츠 지원 수","건",1,3,"전년대비 300%"),mk(304,"KG32","발굴 인원 수","명",66,100,"전년대비 151%"),mk(305,"KG33","강좌 이용 인원","명",236698,260368,"전년대비 110%"),mk(401,"KG41","예산절감액","천원",4132,4545,"전년대비 110%"),mk(402,"KG42","시설개선 이행 건수","건",14,16,"전년대비 110%"),mk(403,"KG43","표준화 달성 항목 수","개",null,5,"핵심 행정 사무 5종"),mk(404,"KG44","직원역량 향상 달성률","점",null,3.34,"사전 2.78점 대비 20% 향상"),mk(405,"KG44","우수사례 전파 달성률","건",16,20,"직전 3개년 평균 110%")];
+const DH=[mh("H01","HC1","역량관리플랫폼 사업리포트 발급 수","건",5,5,1.5,"C 고객","5건 (정기프로그램 1건 필수)","리포트 발급 수","2025년 실적: 5건"),mh("H02","HC1","미래교육 보급률","명",23670,20185,1.5,"C 고객","목표 인원 달성 시 만점","미래교육 보급 인원","2026년 목표: 20,185명"),mh("H03","HC2","청년 제안 반영률","건",8,10,1.5,"C 고객","제안 반영 건수 목표 달성","반영건수/제안건수","2026년 목표: 10건"),mh("H04","HC3","재정자립률 – 자체수입률","%",42.75,52.58,1.0,"F 재무","52.58% 달성","(자체수입액/총수입액)×100","2025년 실적: 42.75%"),mh("H05","HC3","재정자립률 – 일반관리 충당률","%",162.91,215.83,1.0,"F 재무","215.83% 달성","(자체수입액/행정운영경비)×100","2025년 실적: 162.91%"),mh("H06","HC3","효율적 예산 운영률 – 본예산집행률","%",null,96,1.5,"F 재무","96% 이상 만점","(집행액/본예산 총액)×100",null),mh("H07","HC4","홍보활동 확대율 – 언론보도","건",28,24,1.0,"C 고객","24건 달성","언론보도 건수","2025년 실적: 28건"),mh("H08","HC4","홍보활동 확대율 – SNS","건",568,534,1.0,"P 프로세스","534건 달성","SNS 게시 건수","2025년 실적: 568건")];
+const DT=[{id:"T101",goalId:"G1",name:"청소년 활동의 교육가치 입증",items:[mti("i1","생활기록부 연계 사업",3),mti("i2","청소년 특허출원",2),mti("i3","교육융합 콘텐츠 발굴",2)],checked:{},records:{},schedules:{},note:""},{id:"T102",goalId:"G1",name:"민관 협력 기반 사업 브랜드 경쟁력 확보",items:[mti("i1","기존 협력기관 유지",3),mti("i2","신규 협력기관 발굴",3)],checked:{},records:{},schedules:{},note:""},{id:"T103",goalId:"G1",name:"현장 중심의 청소년활동 정체성 회복",items:[mti("i1","청소년 체험활동 제공",5),mti("i2","청소년 주도 기획 프로그램 운영",8)],checked:{},records:{},schedules:{},note:""},{id:"T104",goalId:"G1",name:"능동형 예방중심의 상담 거버넌스 실현",items:[mti("i1","중독예방 프로그램 참여 학교",18),mti("i2","외부전문기관 협력 운영",4)],checked:{},records:{},schedules:{},note:""},{id:"T201",goalId:"G2",name:"청년 성장지원체계 고도화",items:[mti("i1","스마트 체크인 시스템 구축",1),mti("i2","청년창업 사업자 등록",3),mti("i3","청년 주도 프로젝트 발굴",10)],checked:{},records:{},schedules:{},note:""},{id:"T202",goalId:"G2",name:"청년사업 브랜딩 통한 서비스 모델 다각화",items:[mti("i1","청취 브랜드 사업 운영",4),mti("i2","인적자원 네트워크 구축",1)],checked:{},records:{},schedules:{},note:""},{id:"T301",goalId:"G3",name:"공교육 연계 창의융합 교육 모델 AX전환",items:[mti("i1","AI기반 체험 콘텐츠 확산",3),mti("i2","창의융합 콘텐츠 고도화",2)],checked:{},records:{},schedules:{},note:""},{id:"T302",goalId:"G3",name:"에코-스마트 융합 교육 모델 정립",items:[mti("i1","환경 융합 프로그램 개발",4),mti("i2","공모사업 선정",1)],checked:{},records:{},schedules:{},note:""},{id:"T303",goalId:"G3",name:"생애주기별 통합학습 기반 수익구조 극대화",items:[mti("i1","평생학습 신규강좌 발굴",3),mti("i2","평생교육·생활체육 반 증설",7)],checked:{},records:{},schedules:{},note:""},{id:"T401",goalId:"G4",name:"미래대비 조직역량체계 확립",items:[mti("i1","전략·리더십 교육 커리큘럼 개발",1),mti("i2","AI 스마트 솔루션 도입",1)],checked:{},records:{},schedules:{},note:""},{id:"T402",goalId:"G4",name:"현장체감형 경영지원 서비스 혁신",items:[mti("i1","현안 해결 사례 발굴",2),mti("i2","신규 서비스 개발·제안",2)],checked:{},records:{},schedules:{},note:""},{id:"T403",goalId:"G4",name:"지속가능한 운영지원 서비스 표준화",items:[mti("i1","서비스 표준화 운영계획 수립",1),mti("i2","업무 프로세스 가이드라인 수립·배포",5)],checked:{},records:{},schedules:{},note:""},{id:"T404",goalId:"G4",name:"상생하는 지역사회 플랫폼 구축",items:[mti("i1","대외협력 중장기 로드맵 수립",1),mti("i2","대외협력 매뉴얼 구축",1),mti("i3","지역 상생 사회공헌 프로그램 기획·운영",1)],checked:{},records:{},schedules:{},note:""}];
+
+// ─── 상태 ───
+let K=[],T=[],H=[],curTab="overview",fGoal="전체";
+let mTarget=null,hqTarget=null,tmpR=[];
+let connected=false;
+
+// ─── 유틸 ───
+const getP=k=>(!k.target||k.current===null||k.current===undefined)?null:Math.min(100,Math.round((k.current/k.target)*100));
+const getS=p=>p===null?"미기재":p>=100?"달성":p>=70?"진행중":p>=30?"위험":"미시작";
+const pCol=p=>p===null?"#475569":p>=100?"#22c55e":p>=70?"#6366f1":p>=30?"#f59e0b":"#ef4444";
+const fmt=(n,u)=>{if(n===null||n===undefined)return"-";if(u==="천원")return n.toLocaleString();if(n>=10000)return(n/10000).toFixed(1).replace(/\.0$/,"")+"만";return n.toLocaleString();};
+const lss=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+const lsl=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}};
+const uname=()=>document.getElementById("uname").value||"익명";
+const toast=(msg,c="#22c55e")=>{const t=document.getElementById("toast");t.textContent=msg;t.style.color=c;t.style.display="inline-block";setTimeout(()=>t.style.display="none",3000);};
+const setConn=(v)=>{connected=v;document.getElementById("sdot").style.background=v?"#22c55e":"#64748b";document.getElementById("stext").style.color=v?"#86efac":"#64748b";document.getElementById("stext").textContent=v?"Sheets 연동됨":"Sheets 미연결";};
+
+// ─── 초기화 ───
+function init(){
+  const n=localStorage.getItem("uname");
+  if(n)document.getElementById("uname").value=n;
+  K=lsl("K",DK); T=lsl("T",DT); H=lsl("H",DH);
+  renderAll();
+}
+
+function saveLocal(){lss("K",K);lss("T",T);lss("H",H);}
+
+// ─── Sheets 저장 (GET 방식 - CORS 없이 동작) ───
+async function gsPost(entries){
+  try{
+    const params=new URLSearchParams({
+      action:"save",
+      entries:JSON.stringify(entries),
+      updatedBy:uname()
+    });
+    const res=await fetch(GS_URL+"?"+params.toString());
+    const json=await res.json();
+    if(json.ok) setConn(true);
+    return json.ok;
+  }catch(e){
+    console.error("전송 실패",e);
+    return false;
+  }
+}
+
+// ─── Sheets에서 불러오기 ───
+async function loadLog(){
+  toast("불러오는 중...","#f59e0b");
+  try{
+    const res=await fetch(GS_URL+"?t="+Date.now());
+    const data=await res.json();
+    if(data&&data.ok&&data.rows){
+      renderLogTable(data.rows);
+      document.getElementById("logSec").style.display="block";
+      setConn(true);
+      toast("✅ 불러오기 완료!");
+    } else {
+      document.getElementById("logSec").style.display="block";
+      document.getElementById("logBody").innerHTML='<tr><td colspan="6" class="logempty">아직 저장된 기록이 없어요. 실적을 입력하고 저장해보세요!</td></tr>';
+      setConn(true);
+      toast("Sheets 연결됨 (데이터 없음)","#f59e0b");
+    }
+  }catch(e){
+    toast("❌ 연결 실패 - Apps Script를 새 버전으로 재배포하세요","#ef4444");
+    setConn(false);
+  }
+}
+
+function renderLogTable(rows){
+  const tbody=document.getElementById("logBody");
+  if(!rows||rows.length===0){tbody.innerHTML='<tr><td colspan="6" class="logempty">아직 저장된 기록이 없어요</td></tr>';return;}
+  const recent=[...rows].reverse().slice(0,100);
+  tbody.innerHTML=recent.map(r=>{
+    const tc=r.type&&r.type.includes("자체")?"tbk":r.type&&r.type.includes("중점")?"tbh":"tbt";
+    return`<tr><td style="color:#64748b">${r.timestamp||""}</td><td><strong>${r.updatedBy||""}</strong></td><td><span class="tbadge ${tc}">${r.type||""}</span></td><td>${r.name||""}</td><td><strong>${r.value!==""?r.value:"-"}</strong></td><td style="color:#64748b">${r.note||""}</td></tr>`;
+  }).join("");
+  document.getElementById("logSec").style.display="block";
+}
+
+// ─── 탭 전환 ───
+const TAB_CLS = {overview:"on", quant:"on-p", hq:"on-o", qual:"on-g"};
+const TAB_PAGES = {overview:"pOverview", quant:"pQuant", hq:"pHq", qual:"pQual"};
+function switchTab(t){
+  curTab=t;
+  // 모든 탭 페이지 숨기기
+  Object.values(TAB_PAGES).forEach(pid=>{
+    const el=document.getElementById(pid);
+    if(el) el.style.display="none";
+  });
+  // 모든 탭 버튼 초기화
+  Object.keys(TAB_CLS).forEach(tid=>{
+    const btn=document.getElementById("tab-"+tid);
+    if(btn) btn.className="tab";
+  });
+  // 선택된 탭 표시
+  const page=document.getElementById(TAB_PAGES[t]);
+  if(page) page.style.display="block";
+  const btn=document.getElementById("tab-"+t);
+  if(btn) btn.className="tab "+TAB_CLS[t];
+  renderAll();
+}
+
+function renderAll(){
+  if(curTab==="overview")renderOverview();
+  if(curTab==="quant")renderQuant();
+  if(curTab==="hq")renderHQ();
+  if(curTab==="qual")renderQual();
+}
+
+// ─── 전체 현황 ───
+function renderOverview(){
+  const ent=K.filter(k=>k.current!==null&&k.current!==undefined);
+  const avg=ent.length?Math.round(ent.reduce((s,k)=>s+getP(k),0)/ent.length):0;
+  const tdone=T.filter(t=>{const tot=t.items.reduce((s,i)=>s+i.target,0);const don=t.items.reduce((s,i)=>s+(i.target===1?(t.checked[i.id]?1:0):((t.records||{})[i.id]||[]).length),0);return tot>0&&don>=tot;}).length;
+  const hent=H.filter(k=>(k.monthlyLogs||[]).length>0).length;
+  const gs=GOALS.map(g=>{
+    const gids=KPIG.filter(kg=>kg.goalId===g.id).map(kg=>kg.id);
+    const gk=K.filter(k=>gids.includes(k.groupId)&&k.current!==null&&k.current!==undefined);
+    const tot=K.filter(k=>gids.includes(k.groupId)).length;
+    return{...g,avg:gk.length?Math.round(gk.reduce((s,k)=>s+getP(k),0)/gk.length):0,count:tot,ent:gk.length};
+  });
+  document.getElementById("pOverview").innerHTML=`
+    <div class="sg">
+      ${[{l:"자체계량 지표",v:KPIG.length,u:"개",c:"#6366f1"},{l:"평균 달성률",v:ent.length?avg+"%":"-",u:"",c:"#22c55e"},{l:"실적 미입력",v:K.length-ent.length,u:"개",c:"#64748b"},{l:"비계량 완료",v:tdone+"/"+T.length,u:"",c:"#f59e0b"},{l:"중점계량 입력",v:hent+"/"+H.length,u:"",c:"#f97316"}]
+        .map(s=>`<div class="sc"><div class="sl">${s.l}</div><div class="sv" style="color:${s.c}">${s.v}<span style="font-size:12px;margin-left:2px">${s.u}</span></div></div>`).join("")}
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:16px">성과목표별 달성률</h3>
+      ${gs.map(g=>`<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="width:8px;height:8px;border-radius:50%;background:${g.color};display:inline-block"></span>
+            <span style="color:#94a3b8;font-size:12px">${g.name}</span>
+            <span style="color:#64748b;font-size:10px">입력 ${g.ent}/${g.count}</span>
+          </div>
+          <span style="color:${g.color};font-weight:700;font-size:13px">${g.avg}%</span>
+        </div>
+        <div class="pb"><div class="pf" style="width:${g.avg}%;background:${g.color}"></div></div>
+      </div>`).join("")}
+    </div>
+    <div class="card">
+      <h3 style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:12px">성과목표별 달성률 비교</h3>
+      <div class="chart">
+        ${gs.map(g=>`<div class="cc">
+          <span class="cp">${g.avg}%</span>
+          <div class="cb" style="height:${Math.round((g.avg/100)*120)}px;background:${g.color}"></div>
+          <span class="cl">${g.name.slice(0,8)}…</span>
+        </div>`).join("")}
+      </div>
+    </div>`;
+}
+
+// ─── 자체계량 ───
+function renderQuant(){
+  const fG=fGoal==="전체"?GOALS:GOALS.filter(g=>g.id===fGoal);
+  document.getElementById("pQuant").innerHTML=`
+    <div class="filter">
+      ${["전체",...GOALS.map(g=>g.id)].map(gid=>{const g=GOALS.find(g=>g.id===gid);const on=fGoal===gid;return`<button class="fb${on?" on":""}" style="${on?"background:"+(g?.color||"#6366f1"):""}" onclick="setFG('${gid}')">${gid==="전체"?"전체":(g?.name.slice(0,9)+"…")}</button>`;}).join("")}
+    </div>
+    ${fG.map(goal=>{
+      const gG=KPIG.filter(kg=>kg.goalId===goal.id);
+      return`<div style="margin-bottom:28px">
+        <div class="gh" style="border-bottom:2px solid ${goal.color}33">
+          <div class="gb" style="background:${goal.color}"></div>
+          <span class="gn">${goal.name}</span>
+          <span class="wb">가중치 ${goal.weight}</span>
+        </div>
+        ${gG.map(kg=>{
+          const gk=K.filter(k=>k.groupId===kg.id);
+          const en=gk.filter(k=>k.current!==null&&k.current!==undefined);
+          const ga=en.length?Math.round(en.reduce((s,k)=>s+getP(k),0)/en.length):null;
+          return`<div class="grp">
+            <div class="grhd">
+              <div class="grl"><div class="grline" style="background:${goal.color}"></div><span class="grname">${kg.name}</span><span class="grwb">가중치 ${kg.weight}</span></div>
+              <div class="grr"><span>입력 ${en.length}/${gk.length}</span><span style="color:${pCol(ga)};font-weight:800;font-size:13px">${ga===null?"-":ga+"%"}</span></div>
+            </div>
+            <div class="grcards">${gk.map(kpi=>kCard(kpi,goal.color)).join("")}</div>
+          </div>`;
+        }).join("")}
+      </div>`;
+    }).join("")}`;
+}
+
+function kCard(k,col){
+  const p=getP(k),s=getS(p),c=pCol(p);
+  const schedArea=p===null?`<div>${k.scheduledAt
+    ?`<button class="sched-btn" style="color:#6366f1;border-color:#6366f144" onclick="openSched(${k.id})">📅 입력 예정: ${k.scheduledAt}</button>`
+    :`<button class="sched-btn" onclick="openSched(${k.id})">+ 실적 입력 예정일 설정</button>`}</div>`:"";
+  const rp=(k.records||[]).length>0?`<div class="recprev"><div class="rpti">세부 실적 ${k.records.length}건</div>${k.records.slice(-2).map(r=>`<div class="rrow"><span class="ridx">${k.records.indexOf(r)+1}</span><span class="rtitle">${r.title}</span>${r.date?`<span class="rdate">${r.date}</span>`:""}</div>`).join("")}</div>`:"";
+  return`<div class="kc" onmouseenter="this.style.boxShadow='0 6px 22px ${col}22'" onmouseleave="this.style.boxShadow=''">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="flex:1"><div class="kname">${k.name}</div>${k.criterion?`<div class="kcrit">${k.criterion}</div>`:""}</div>
+      <button style="background:none;border:none;color:#8b9ab0;padding:2px;font-size:12px" onclick="openUpdate(${k.id})">📈</button>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        ${p===null?`<span class="ke">실적 미입력</span>`:`<span class="kv">${fmt(k.current,k.unit)}<span class="ku">${k.unit}</span></span>`}
+        <span class="kt">목표 ${fmt(k.target,k.unit)}${k.unit}</span>
+      </div>
+      <div class="pb"><div class="pf" style="width:${p||0}%;background:${c}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span class="ks" style="color:${c}">● ${s}</span>
+        <span class="kp">${p===null?"-":p+"%"}</span>
+      </div>
+    </div>
+    ${k.prev!==null&&k.prev!==undefined?`<div class="kprev">25년 실적: <span>${fmt(k.prev,k.unit)}${k.unit}</span></div>`:""}
+    ${rp}${schedArea}
+  </div>`;
+}
+
+// ─── 중점계량 ───
+function renderHQ(){
+  const totW=DH.reduce((s,k)=>s+k.weight,0).toFixed(1);
+  const hent=H.filter(k=>(k.monthlyLogs||[]).length>0).length;
+  document.getElementById("pHq").innerHTML=`
+    <div class="hqbanner">
+      <span style="font-size:17px">🏢</span>
+      <div><p style="color:#fb923c;font-weight:700;font-size:12px;margin:0">본부 공통 중점지표 (야탑)</p><p style="color:#94a3b8;font-size:10px;margin:2px 0 0">총 가중치 ${totW}점</p></div>
+      <div style="margin-left:auto;display:flex;gap:12px">
+        ${[{l:"전체",v:H.length,c:"#f97316"},{l:"입력완료",v:hent,c:"#22c55e"},{l:"미입력",v:H.length-hent,c:"#64748b"}]
+          .map(s=>`<div style="text-align:center"><p style="color:${s.c};font-weight:800;font-size:19px;margin:0">${s.v}</p><p style="color:#64748b;font-size:10px;margin:0">${s.l}</p></div>`).join("")}
+      </div>
+    </div>
+    ${HQCATS.map(cat=>{
+      const ck=H.filter(k=>k.catId===cat.id);
+      const en=ck.filter(k=>(k.monthlyLogs||[]).length>0);
+      const avg=en.length?Math.round(en.reduce((s,k)=>{const logs=k.monthlyLogs||[];const lat=logs[logs.length-1];return s+getP({...k,current:lat?lat.value:null});},0)/en.length):null;
+      return`<div style="margin-bottom:24px">
+        <div class="gh" style="border-bottom:2px solid ${cat.color}33">
+          <div class="gb" style="background:${cat.color}"></div>
+          <span class="gn">${cat.name}</span>
+          <span class="wb">가중치 합 ${ck.reduce((s,k)=>s+k.weight,0).toFixed(1)}점</span>
+          ${avg!==null?`<span style="margin-left:auto;color:${cat.color};font-weight:800;font-size:14px">${avg}%</span>`:""}
+        </div>
+        <div class="hqgrid">${ck.map(kpi=>hqCard(kpi,cat.color)).join("")}</div>
+      </div>`;
+    }).join("")}`;
+}
+
+function hqCard(kpi,col){
+  const logs=kpi.monthlyLogs||[];
+  const lat=logs.length?logs[logs.length-1]:null;
+  const fp=getP({...kpi,current:lat?lat.value:null});
+  const s=getS(fp),c=pCol(fp);
+  const logsH=logs.length?`<div class="hqinfo" style="border-top:1px solid #1e2d45;padding-top:7px">
+    <button class="hqlogtog" onclick="tglHqLogs('hql-${kpi.id}')">📅 월별 실적 ${logs.length}건 ▼</button>
+    <div id="hql-${kpi.id}" style="display:none">
+      ${[...logs].reverse().map(l=>`<div class="hqlogitem">
+        <span class="hqlogm" style="color:${col}">${l.month}</span>
+        <span class="hqlogv">${fmt(l.value,kpi.unit)}${kpi.unit}</span>
+        <span class="hqlogn">${l.note||""}</span>
+        <span class="hqlogd">${l.date||""}</span>
+        <button class="hqlogdel" onclick="delHqLog('${kpi.id}',${l.id})">🗑</button>
+      </div>`).join("")}
+    </div>
+  </div>`:"";
+  return`<div class="hqc" onmouseenter="this.style.boxShadow='0 6px 22px ${col}22'" onmouseleave="this.style.boxShadow=''">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:7px">
+      <div style="flex:1">
+        <div style="display:flex;gap:5px;margin-bottom:3px;flex-wrap:wrap">
+          <span class="hqtag" style="background:${col}22;color:${col}">${kpi.bsc}</span>
+          <span style="color:#64748b;font-size:9px">가중치 ${kpi.weight}점</span>
+        </div>
+        <div class="hqname">${kpi.name}</div>
+      </div>
+      <button class="hqbtn" onclick="openHq('${kpi.id}')">+ 실적</button>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        ${lat===null?`<span style="color:#64748b;font-size:13px;font-weight:700">실적 미입력</span>`:
+          `<span style="color:#f1f5f9;font-size:18px;font-weight:800">${fmt(lat.value,kpi.unit)}<span style="color:#8b9ab0;font-size:10px;margin-left:2px">${kpi.unit}</span></span>`}
+        <span style="color:#94a3b8;font-size:11px">목표 ${fmt(kpi.target,kpi.unit)}${kpi.unit}</span>
+      </div>
+      <div class="pb"><div class="pf" style="width:${fp||0}%;background:${c}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span style="color:${c};font-size:10px;font-weight:600">● ${s}</span>
+        <span style="color:#94a3b8;font-size:10px">${fp===null?"-":fp+"%"}</span>
+      </div>
+    </div>
+    <div class="hqinfo">
+      <p>📐 ${kpi.formula}</p>
+      ${kpi.criterion?`<p>🎯 ${kpi.criterion}</p>`:""}
+      ${kpi.targetNote?`<p>ℹ️ ${kpi.targetNote}</p>`:""}
+    </div>
+    ${logsH}
+  </div>`;
+}
+
+// ─── 비계량 ───
+function renderQual(){
+  const fG=fGoal==="전체"?GOALS:GOALS.filter(g=>g.id===fGoal);
+  document.getElementById("pQual").innerHTML=`
+    <div class="filter">
+      ${["전체",...GOALS.map(g=>g.id)].map(gid=>{const g=GOALS.find(g=>g.id===gid);const on=fGoal===gid;return`<button class="fb${on?" on":""}" style="${on?"background:"+(g?.color||"#6366f1"):""}" onclick="setFG('${gid}')">${gid==="전체"?"전체":(g?.name.slice(0,9)+"…")}</button>`;}).join("")}
+    </div>
+    <div style="display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap">
+      ${["달성","진행중","미시작"].map(st=>{
+        const cnt=T.filter(t=>{const tot=t.items.reduce((s,i)=>s+i.target,0);const don=t.items.reduce((s,i)=>s+(i.target===1?(t.checked[i.id]?1:0):((t.records||{})[i.id]||[]).length),0);const a=tot>0&&don>=tot?"달성":don>0?"진행중":"미시작";return a===st&&(fGoal==="전체"||t.goalId===fGoal);}).length;
+        const c=st==="달성"?"#22c55e":st==="진행중"?"#f59e0b":"#6b7280";
+        return`<div style="background:#0f1623;border:1px solid ${c}33;border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:7px">
+          <span style="width:6px;height:6px;border-radius:50%;background:${c};display:inline-block"></span>
+          <span style="color:#94a3b8;font-size:11px">${st}</span>
+          <span style="color:${c};font-weight:700;font-size:14px">${cnt}</span>
+        </div>`;
+      }).join("")}
+    </div>
+    ${fG.map(goal=>`<div style="margin-bottom:24px">
+      <div class="gh" style="border-bottom:2px solid ${goal.color}33">
+        <div class="gb" style="background:${goal.color}"></div>
+        <span class="gn">${goal.name}</span>
+      </div>
+      <div class="tgrid">${T.filter(t=>t.goalId===goal.id).map(t=>tCard(t,goal.color)).join("")}</div>
+    </div>`).join("")}`;
+}
+
+function tCard(task,col){
+  const tot=task.items.reduce((s,i)=>s+i.target,0);
+  const don=task.items.reduce((s,i)=>s+Math.min(i.target===1?(task.checked[i.id]?1:0):((task.records||{})[i.id]||[]).length,i.target),0);
+  const pct=tot>0?Math.round((don/tot)*100):0;
+  const aS=pct===100?"달성":pct>0?"진행중":"미시작";
+  const pc=pct===100?"#22c55e":pct>=50?"#6366f1":pct>0?"#f59e0b":"#334155";
+  const sc=aS==="달성"?"#22c55e":aS==="진행중"?"#f59e0b":"#6b7280";
+  return`<div class="tc" onmouseenter="this.style.boxShadow='0 6px 22px ${col}22'" onmouseleave="this.style.boxShadow=''">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:7px">
+      <span class="tname">${task.name}</span>
+      <span class="tst" style="color:${sc}">● ${aS}</span>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        <span style="color:#94a3b8;font-size:10px">완료기준 달성률</span>
+        <span style="color:${pc};font-weight:800;font-size:16px">${pct}%</span>
+      </div>
+      <div class="pb"><div class="pf" style="width:${pct}%;background:${pc}"></div></div>
+      <p style="color:#94a3b8;font-size:10px;margin:3px 0 0;text-align:right">${don}/${tot} 건 완료</p>
+    </div>
+    ${task.items.map(item=>{
+      const dn=item.target===1?(task.checked[item.id]?1:0):((task.records||{})[item.id]||[]).length;
+      const comp=dn>=item.target;
+      const recs=(task.records||{})[item.id]||[];
+      const sched=(task.schedules||{})[item.id];
+      return`<div class="iwrap" style="background:${comp?"#0d2818":"#0d1220"};border:1px solid ${comp?"#22c55e33":"#1e2d45"}">
+        <div class="irow">
+          ${item.target===1
+            ?`<div class="ichk${comp?" done":""}" onclick="toggleChk('${task.id}','${item.id}')">
+                ${comp?`<svg width="9" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:""}
+              </div>`
+            :`<div class="icnt" style="color:${comp?"#22c55e":dn>0?"#f59e0b":"#64748b"}">${dn}<span style="color:#64748b;font-size:10px">/${item.target}</span></div>`}
+          <span class="ilabel" style="color:${comp?"#4ade80":"#94a3b8"}">${item.label}${item.target>1?` (${item.target}건)`:""}</span>
+          <div style="display:flex;gap:3px">
+            ${item.target>1&&!comp?`<button class="iadd" onclick="addItemR('${task.id}','${item.id}')">+ 추가</button>`:""}
+            ${item.target>1&&recs.length>0?`<button class="itog" onclick="tglEl('irecs-${task.id}-${item.id}')">▼ ${recs.length}</button>`:""}
+          </div>
+        </div>
+        ${item.target>1&&recs.length>0?`<div class="irecs" id="irecs-${task.id}-${item.id}" style="display:none">
+          ${recs.map((r,idx)=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
+            <span style="color:#6366f1;font-weight:700;font-size:10px;min-width:16px">${idx+1}</span>
+            <span style="color:#cbd5e1;font-size:11px;flex:1">${r.title}</span>
+            ${r.date?`<span style="color:#64748b;font-size:10px">${r.date}</span>`:""}
+            <button style="background:none;border:none;color:#64748b;font-size:11px" onclick="delIR('${task.id}','${item.id}',${r.id})">🗑</button>
+          </div>`).join("")}
+        </div>`:""}
+        ${!comp?`<div class="isch">
+          <button class="ischbtn" style="color:${sched?"#6366f1":"#374151"}" onclick="openISched('${task.id}','${item.id}')">
+            ${sched?`📅 완료 예정: ${sched}`:"+ 완료 예정일 설정"}
+          </button>
+        </div>`:""}
+      </div>`;
+    }).join("")}
+    <button class="tnote" style="color:${task.note?"#94a3b8":"#64748b"}" onclick="editNote('${task.id}')">
+      ${task.note?`📝 ${task.note}`:"+ 진행사항 메모 추가"}
+    </button>
+  </div>`;
+}
+
+// ─── 모달 ───
+function closeM(id){document.getElementById(id).classList.remove("show");}
+
+function openUpdate(id){
+  const k=K.find(k=>k.id===id);if(!k)return;
+  mTarget=k;tmpR=[...(k.records||[])];
+  document.getElementById("mUpdateSub").textContent=k.name;
+  document.getElementById("mUpdateLbl").textContent=`현재 수치 (${k.unit}) · 목표: ${fmt(k.target,k.unit)}${k.unit}${k.prev!=null?" · 25년: "+fmt(k.prev,k.unit)+k.unit:""}`;
+  document.getElementById("mUpdateVal").value=k.current!==null?k.current:"";
+  document.getElementById("reccnt").textContent=`(${tmpR.length}건)`;
+  document.getElementById("achDiv").style.display="none";
+  document.getElementById("arForm").style.display="none";
+  renderRL();calcAch();
+  document.getElementById("mUpdate").classList.add("show");
+}
+function calcAch(){
+  const v=parseFloat(document.getElementById("mUpdateVal").value);
+  const k=mTarget;if(!k||isNaN(v)){document.getElementById("achDiv").style.display="none";return;}
+  const p=Math.min(100,Math.round((v/k.target)*100));
+  const d=document.getElementById("achDiv");d.style.display="block";d.style.color=pCol(p);d.textContent=`달성률 ${p}%`;
+}
+function showAR(){document.getElementById("arForm").style.display="block";}
+function hideAR(){document.getElementById("arForm").style.display="none";}
+function addR(){
+  const t=document.getElementById("arTitle").value.trim();if(!t)return;
+  tmpR.push({id:Date.now(),title:t,date:document.getElementById("arDate").value});
+  document.getElementById("arTitle").value="";document.getElementById("arDate").value="";
+  document.getElementById("reccnt").textContent=`(${tmpR.length}건)`;hideAR();renderRL();
+}
+function delR(id){tmpR=tmpR.filter(r=>r.id!==id);document.getElementById("reccnt").textContent=`(${tmpR.length}건)`;renderRL();}
+function renderRL(){
+  const el=document.getElementById("recList");
+  if(!tmpR.length){el.innerHTML=`<p style="color:#475569;font-size:11px;text-align:center;padding:12px 0">세부 실적이 없어요</p>`;return;}
+  el.innerHTML=tmpR.map((r,i)=>`<div class="ritem"><span style="color:#6366f1;font-weight:700;font-size:11px;min-width:18px">${i+1}</span><span style="color:#f1f5f9;font-size:12px;flex:1">${r.title}</span>${r.date?`<span style="color:#64748b;font-size:10px">${r.date}</span>`:""}<button style="background:none;border:none;color:#64748b;font-size:12px" onclick="delR(${r.id})">🗑</button></div>`).join("");
+}
+async function saveUpdate(){
+  const k=mTarget;if(!k)return;
+  const val=document.getElementById("mUpdateVal").value;
+  const num=val===""?null:Number(val);
+  K=K.map(x=>x.id!==k.id?x:{...x,current:num,records:tmpR,scheduledAt:num!==null?null:x.scheduledAt});
+  saveLocal();
+  const entries=[{type:"자체계량",id:k.id,name:k.name,value:num,note:`목표:${k.target}${k.unit}`}];
+  tmpR.forEach(r=>entries.push({type:"자체계량_세부",id:k.id,name:k.name+" - "+r.title,value:"",note:r.date||""}));
+  const ok=await gsPost(entries);
+  toast(ok?"✅ 저장 & Sheets 전송 완료!":"✅ 로컬 저장 완료 (Sheets 미연결)");
+  closeM("mUpdate");renderAll();
+}
+
+function openHq(id){
+  const k=H.find(x=>x.id===id);if(!k)return;hqTarget=k;
+  const now=new Date();
+  document.getElementById("mHqName").textContent=k.name;
+  const cat=HQCATS.find(c=>c.id===k.catId);
+  const tag=document.getElementById("mHqTag");
+  tag.textContent=cat?cat.name:"";tag.style.background=(cat?cat.color:"#6366f1")+"22";tag.style.color=cat?cat.color:"#6366f1";
+  document.getElementById("mHqMonth").value=`${now.getMonth()+1}월`;
+  document.getElementById("mHqDate").value=now.toISOString().slice(0,10);
+  document.getElementById("mHqVal").value="";document.getElementById("mHqNote").value="";
+  document.getElementById("mHqLbl").textContent=`실적 (${k.unit}) · 목표: ${fmt(k.target,k.unit)}${k.unit}`;
+  document.getElementById("hqachDiv").style.display="none";
+  document.getElementById("mHq").classList.add("show");
+}
+function calcHqAch(){
+  const v=parseFloat(document.getElementById("mHqVal").value);const k=hqTarget;
+  if(!k||isNaN(v)){document.getElementById("hqachDiv").style.display="none";return;}
+  const p=Math.min(100,Math.round((v/k.target)*100));
+  const d=document.getElementById("hqachDiv");d.style.display="block";d.style.color=pCol(p);d.textContent=`달성률 ${p}%`;
+}
+async function saveHq(){
+  const k=hqTarget;if(!k)return;
+  const val=document.getElementById("mHqVal").value;if(!val){alert("실적 수치를 입력하세요");return;}
+  const log={id:Date.now(),month:document.getElementById("mHqMonth").value,date:document.getElementById("mHqDate").value,value:Number(val),note:document.getElementById("mHqNote").value};
+  H=H.map(x=>x.id!==k.id?x:{...x,monthlyLogs:[...(x.monthlyLogs||[]),log]});
+  saveLocal();
+  const ok=await gsPost([{type:"중점계량",id:k.id,name:k.name,value:val,note:`${log.month}/${log.date}/${log.note||""}`}]);
+  toast(ok?"✅ 저장 & Sheets 전송 완료!":"✅ 로컬 저장 완료 (Sheets 미연결)");
+  closeM("mHq");renderAll();
+}
+function tglHqLogs(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==="none"?"block":"none";}
+function delHqLog(kpiId,logId){H=H.map(k=>k.id!==kpiId?k:{...k,monthlyLogs:(k.monthlyLogs||[]).filter(l=>l.id!==logId)});saveLocal();renderAll();}
+
+// ─── 비계량 액션 ───
+async function toggleChk(tid,iid){
+  T=T.map(t=>{if(t.id!==tid)return t;return{...t,checked:{...t.checked,[iid]:!t.checked[iid]}};});
+  saveLocal();
+  const task=T.find(t=>t.id===tid);const item=task.items.find(i=>i.id===iid);
+  await gsPost([{type:"비계량",id:tid,name:task.name+" - "+item.label,value:task.checked[iid]?"완료":"취소",note:""}]);
+  renderAll();
+}
+async function addItemR(tid,iid){
+  const title=prompt("실적명:");if(!title)return;
+  const date=prompt("날짜 (예: 2026-05-22, 생략가능):");
+  T=T.map(t=>{if(t.id!==tid)return t;const er=(t.records||{})[iid]||[];return{...t,records:{...t.records,[iid]:[...er,{id:Date.now(),title,date:date||""}]}};});
+  saveLocal();
+  const task=T.find(t=>t.id===tid);
+  await gsPost([{type:"비계량_세부",id:tid,name:task.name+" - "+title,value:"",note:date||""}]);
+  renderAll();
+}
+function delIR(tid,iid,rid){T=T.map(t=>{if(t.id!==tid)return t;const er=((t.records||{})[iid]||[]).filter(r=>r.id!==rid);return{...t,records:{...t.records,[iid]:er}};});saveLocal();renderAll();}
+function editNote(tid){const t=T.find(t=>t.id===tid);if(!t)return;const n=prompt("메모:",t.note||"");if(n===null)return;T=T.map(x=>x.id!==tid?x:{...x,note:n});saveLocal();renderAll();}
+function openISched(tid,iid){const t=T.find(t=>t.id===tid);if(!t)return;const d=prompt("완료 예정일:",(t.schedules||{})[iid]||"");if(d===null)return;T=T.map(x=>x.id!==tid?x:{...x,schedules:{...(x.schedules||{}),[iid]:d}});saveLocal();renderAll();}
+function openSched(kid){const k=K.find(k=>k.id===kid);if(!k)return;const d=prompt("실적 입력 예정일:",k.scheduledAt||"");if(d===null)return;K=K.map(x=>x.id!==kid?x:{...x,scheduledAt:d});saveLocal();renderAll();}
+function setFG(g){fGoal=g;renderAll();}
+function tglEl(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==="none"?"block":"none";}
+
+init();
+</script>
+</body>
+</html>
